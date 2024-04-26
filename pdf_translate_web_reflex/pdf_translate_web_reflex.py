@@ -2,6 +2,9 @@
 from .styles.styles import *
 from rxconfig import config
 from .componentes.navbar import navbar
+from .componentes.body import body
+from .componentes.footer import footer
+from .views.traductor_pdf import *
 
 import reflex as rx
 
@@ -10,36 +13,19 @@ class State(rx.State):
     """The app state."""
 
 
+
+@rx.page('/')
 def index() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),
-        rx.container(
-            rx.chakra.vstack(
-                rx.audio(
-                    url='',
-                    controls=True,
-                    width="100%",
-                ),
-                rx.button(
-                    "Translate",
-                    width="100%",
-                    height="3rem",
-                    margin_top="5rem",
-                ),
-                margin_top="5rem",
-            ),
-        ),
-        rx.theme_panel(),
+        body(),
+        footer(),
+        rx.theme_panel(default_open=False),
     )
 
 app = rx.App(
-    theme=rx.theme(
-        appearance="light", 
-        has_background=True, 
-        radius="large", 
-        accent_color="teal", 
-        scaling='110%',
-    ),
+    theme=THEME,
     style= BASE_STYLES,
 )
 app.add_page(index)
+app.add_page(traductor_pdf)

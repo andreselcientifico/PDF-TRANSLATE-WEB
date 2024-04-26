@@ -1,7 +1,17 @@
 from enum import Enum
 import reflex as rx
 
-MAX_WIDTH = "600PX"
+MAX_WIDTH = "550PX"
+
+MARGIN_TOP_BODY = "10rem"
+
+THEME = rx.theme(
+        appearance="light", 
+        has_background=True, 
+        radius="large", 
+        accent_color="teal", 
+        scaling='110%',
+    )
 
 #Fonts
 class Font(Enum):
@@ -28,7 +38,7 @@ class TextColor(Enum):
 
 #Size
 class Size(Enum):
-    NONE = "0"
+    NONE = "0px"
     SMALL = "0.5rem"
     MEDIUM = "0.8rem"
     LARGE = "1.5rem"
@@ -40,7 +50,6 @@ BASE_STYLES = {
     "font_family" : Font.DEFAULT.value,
     "background_color" : Color.BACKGROUND.value, 
     "color" : TextColor.BODY.value,
-    "max_width" : "100%",
     "height" : "100vh",
     rx.chakra.button : {
         "color": "white",
