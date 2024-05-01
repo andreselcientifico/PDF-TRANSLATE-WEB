@@ -3,3 +3,4 @@ from .footer import *
 from .navbar import *
 from .editor_texto import *
 from .entry import *
+from .react_pdf import *

@@ -202,6 +202,17 @@ def avatar() ->rx.Component:
                 ),
                 rx.menu.content(
                     rx.menu.item(
+                        rx.hstack(
+                            rx.icon("sun", size=16),
+                            rx.color_mode.switch(size="1"),
+                            rx.icon("moon", size=16),
+                            margin="8px",
+                            float="right",
+                        ),
+                        align_items='center',
+                        cursor = 'pointer',
+                    ),
+                    rx.menu.item(
                         "Traductor PDF",
                         on_click=rx.redirect("/translate"),
                         cursor = 'pointer',
