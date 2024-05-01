@@ -2,8 +2,8 @@
 from .styles import *
 from rxconfig import config
 from .componentes import navbar, body, footer
-from .views import login, traductor_pdf, SignUp, editor
-from .state import Base, HomeState
+from .views import traductor_pdf, editor
+from .state import UserInfoState, State
 import reflex as rx
 
 @rx.page('/')
@@ -20,8 +20,6 @@ app = rx.App(
     style= BASE_STYLES,
 )
 
-app.add_page(index, route='/', on_load=Base.check_login())
-app.add_page(login)
-app.add_page(SignUp)
-app.add_page(traductor_pdf, route='/translate', on_load=Base.check_login())
-app.add_page(editor, route='/editor', on_load=Base.check_login())
+app.add_page(index)
+app.add_page(traductor_pdf, route='/translate', on_load=State.check_login())
+app.add_page(editor, route='/editor', on_load=State.check_login())

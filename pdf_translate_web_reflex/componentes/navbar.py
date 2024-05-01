@@ -1,71 +1,24 @@
 import reflex as rx
-from pdf_translate_web_reflex.styles import *
-from pdf_translate_web_reflex.state import Base
-from pdf_translate_web_reflex.state import HomeState
+import reflex_google_auth
 
-def avatar(HomeState) ->rx.Component:
-    # username = HomeState.user.username if HomeState.user else None
-    # if username:
-    #     return rx.menu.root(
-    #         rx.menu.trigger(
-    #             rx.button('Menu'),
-    #             cursor = 'pointer',
-    #         ),
-    #         rx.menu.content(
-    #             rx.menu.item(
-    #                 "Traductor PDF",
-    #                 on_click=rx.redirect("/translate"),
-    #                 cursor = 'pointer',
-    #             ),
-    #             rx.menu.item(
-    #                 "Traducir Audio Tiempo Real",
-    #                 cursor = 'pointer',
-    #             ),
-    #             rx.menu.separator(),
-    #             rx.menu.item(
-    #                 rx.button(
-    #                     "login",
-    #                     on_click=rx.redirect("/login"),
-    #                     width="100%",
-    #                     cursor = 'pointer',
-    #                 ),
-    #             ),
-    #             width="15rem",
-    #         ),
-    #     )
-    # else:
-        return rx.menu.root(
-            rx.menu.trigger(
-                rx.flex(
-                    rx.chakra.avatar(name=Base.user.username, size='sm'),  # Avatar
-                    rx.text(Base.user.username),  # Texto adicional al lado del avatar
-                    align="center",  # Alinea el avatar y el texto verticalmente
-                    spacing="2",  # Espacio entre el avatar y el texto
-                ),
-                cursor = 'pointer',
-            ),
-            rx.menu.content(
-                rx.menu.item(
-                    "Traductor PDF",
-                    on_click=rx.redirect("/translate"),
-                    cursor = 'pointer',
-                ),
-                rx.menu.item(
-                    "Traducir Audio Tiempo Real",
-                    cursor = 'pointer',
-                ),
-                rx.menu.separator(),
-                rx.menu.item(
-                    rx.button(
-                        "logout",
-                        on_click=Base.logout(),
-                        width="100%",
-                        cursor = 'pointer',
+from .entry import *
+from ..styles import *
+from ..state import State
+from ..models import Entry,Author
+
+
+def menu_state() ->rx.Component:
+    return rx.cond(
+                    reflex_google_auth.GoogleAuthState.token_is_valid
+                    & State.user_info.enabled,
+                    avatar(),
+                    rx.flex(
+                        auth_error_callout(),
+                        rx.spacer(),
+                        google_auth_button(),
+                        on_click=State.set_form_error(""),
                     ),
-                ),
-                width="15rem",
-            ),
-        )
+                )
 
 
 def navbar() ->rx.Component:
@@ -95,7 +48,7 @@ def navbar() ->rx.Component:
         ),
         rx.spacer(),
         rx.input(placeholder="Search here...", max_length="30"),
-        avatar(HomeState),
+        menu_state(),
         position="sticky",
         top="0px",
         padding="1em",
