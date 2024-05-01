@@ -1,8 +1,8 @@
 import reflex as rx
-from pdf_translate_web_reflex.styles.styles import *
+from pdf_translate_web_reflex.styles import *
 
 def body() -> rx.Component:
-    return rx.box(
+    return rx.vstack(
             rx.hstack(
                 rx.box(
                     rx.heading(
@@ -22,14 +22,8 @@ def body() -> rx.Component:
                     size= '9'
                 ),
                 width = "100%",
-                gap = "inherit",
-                margin_top = MARGIN_TOP_BODY,
+                gap = "initial",
             ),
-            # rx.divider(
-            #     color_scheme = 'cyan',
-            #     high_contrast=True,
-            #     margin_top = "2rem",
-            # ),
             rx.text(
                 "Transforma textos y libros en otros idiomas.",
                 size= '6',
@@ -52,5 +46,6 @@ def body() -> rx.Component:
                 size= '6',
             ),
             max_width = MAX_WIDTH,
-            align_items = "start"
+            align_items = "start",
+            margin_top = MARGIN_TOP_BODY,
         ),

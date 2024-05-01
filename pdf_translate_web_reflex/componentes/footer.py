@@ -1,5 +1,5 @@
 import reflex as rx
-from pdf_translate_web_reflex.styles.styles import *
+from pdf_translate_web_reflex.styles import *
 import datetime
 
 def footer() -> rx.Component:

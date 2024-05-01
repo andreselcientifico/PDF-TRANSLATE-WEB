@@ -13,7 +13,7 @@ THEME = rx.theme(
         scaling='110%',
     )
 
-#Fonts
+#Fuentes
 class Font(Enum):
     DEFAULT = "Poppins"
     TITLE = "Poppins"
@@ -23,7 +23,7 @@ class FontWeight(Enum):
     LIGHT = "300"
     MEDIUM = "500"
 
-#Colors
+#Colores
 class Color(Enum):
     PRIMARY = "#14A1F0"
     SECONDARY = "#087ec4"
@@ -36,7 +36,7 @@ class TextColor(Enum):
     BODY = "#C3C7CB"
     FOOTER = "#A3ABB2"
 
-#Size
+#tamaños
 class Size(Enum):
     NONE = "0px"
     SMALL = "0.5rem"
@@ -45,7 +45,7 @@ class Size(Enum):
     XLARGE = "3rem"
     XXLARGE = "5rem"
 
-#Styles
+#estilos
 BASE_STYLES = {
     "font_family" : Font.DEFAULT.value,
     "background_color" : Color.BACKGROUND.value, 
