@@ -8,6 +8,7 @@ from io import BytesIO
 class Translate(rx.State):
     
     text: str
+    content_editor : str = """"""
     error_message: str
 
     async def extract_text_from_pdf(self, file: list[rx.UploadFile]):
@@ -27,6 +28,9 @@ class Translate(rx.State):
             except Exception as e:
                 self.error_message = str(e)
         return rx.redirect("/editor")
+
+    def text_editor(self, content: str):
+        self.content_editor = content
     
     def message_error(self):
         return self.error_message    

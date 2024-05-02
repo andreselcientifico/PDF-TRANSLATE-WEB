@@ -8,15 +8,21 @@ from ..componentes.react_pdf import react_pdf
 def editor() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),
-        rx.box(
-            rx.grid(
-                rx.hstack(
-                    react_pdf(stream=Translate.text),
-                    Editor_Texto(Translate.text, rx.EditorButtonList.COMPLEX.value),
-                    max_width="80%",
-                    margin="auto",
-                    padding="1rem",
-                )
-            )
-        )
+        rx.flex(
+            Editor_Texto(Translate.text, Translate.text_editor(), rx.EditorButtonList.COMPLEX.value),
+            react_pdf(
+                stream=Translate.text,
+                aling='center',
+            ),
+            direction='row',
+            style={
+                'justifyContent': 'space-evenly !important'
+            },
+            padding="1rem",
+            width = '100% !important',
+        ),
+        rx.button(
+            'Traducir todo el texto', 
+        ),
+        height = '100vh',
     )

@@ -81,7 +81,7 @@ class UserInfoState(reflex_google_auth.GoogleAuthState):
     @rx.var
     def logged_in(self):
         """Check if a user is logged in."""
-        return self.user_name is not ""
+        return self.user_name != ""
 
 
 class State(UserInfoState):
@@ -102,7 +102,7 @@ class State(UserInfoState):
     def logout_and_reset(self):
         self.logout()
         self.reload_after_login(None)
-        self.auth_error = ""
+        self.user_name = ""
         return rx.redirect("/")
 
     async def handle_submit(self, form_data: dict[str, str]):
