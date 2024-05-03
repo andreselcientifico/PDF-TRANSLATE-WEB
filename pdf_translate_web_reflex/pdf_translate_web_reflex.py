@@ -21,5 +21,5 @@ app = rx.App(
 )
 
 app.add_page(index)
-app.add_page(traductor_pdf, route='/translate', on_load=State.check_login())
-app.add_page(editor, route='/editor', on_load=State.check_login())
+app.add_page(traductor_pdf)
+app.add_page(editor)

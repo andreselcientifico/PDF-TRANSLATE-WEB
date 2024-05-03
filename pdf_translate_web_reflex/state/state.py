@@ -72,17 +72,6 @@ class UserInfoState(reflex_google_auth.GoogleAuthState):
         else:
             self.auth_error = "Sign in with Google to post."
         return False
-    
-    def check_login(self):
-        """Check if a user is logged in."""
-        if not self.logged_in:
-            return rx.redirect("/")
-        
-    @rx.var
-    def logged_in(self):
-        """Check if a user is logged in."""
-        return self.user_name != ""
-
 
 class State(UserInfoState):
     """The base state for the App."""

@@ -212,15 +212,6 @@ def avatar() ->rx.Component:
                         align_items='center',
                         cursor = 'pointer',
                     ),
-                    rx.menu.item(
-                        "Traductor PDF",
-                        on_click=rx.redirect("/translate"),
-                        cursor = 'pointer',
-                    ),
-                    rx.menu.item(
-                        "Traducir Audio Tiempo Real",
-                        cursor = 'pointer',
-                    ),
                     rx.menu.separator(),
                     rx.menu.item(
                         "Cerrar Sesion",

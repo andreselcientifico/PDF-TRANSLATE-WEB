@@ -24,7 +24,7 @@ def menu_state() ->rx.Component:
 def navbar() ->rx.Component:
     return rx.hstack(
         rx.box(
-            rx.hstack(
+            rx.chakra.hstack(
                 rx.box(
                     rx.heading(
                         'PYRU', 
@@ -41,10 +41,29 @@ def navbar() ->rx.Component:
                     font_size = '1rem', 
                     high_contrast=True,
                 ),
+                rx.button(
+                    "Traductor PDF",
+                    on_click=rx.redirect("/translate"),
+                    color=Color.PRIMARY.value, 
+                    bg="white", 
+                    border=f"1px solid {Color.SECONDARY.value}",
+                    cursor = 'pointer',
+                    margin_top = "1rem",
+                ),
+                rx.button(
+                        "Traducir Audio Tiempo Real",
+                        color=Color.PRIMARY.value, 
+                        bg="white", 
+                        border=f"1px solid {Color.SECONDARY.value}",
+                        cursor = 'pointer',
+                        margin_top = "1rem",
+
+                ),
                 gap = "inherit",
                 on_click=rx.redirect("/"),
                 cursor="pointer",
             ),
+            
         ),
         rx.spacer(),
         rx.input(placeholder="Search here...", max_length="30"),
