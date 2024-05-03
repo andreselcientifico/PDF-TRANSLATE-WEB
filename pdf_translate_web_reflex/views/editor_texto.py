@@ -12,6 +12,8 @@ from pdf_translate_web_reflex.componentes import navbar
 from ..componentes.react_pdf import react_pdf 
 from ..styles import *
 
+nltk.download('punkt')
+
 url_data = ["Hugginface" ]
 
 class AI_SELECT(rx.State):
@@ -105,7 +107,7 @@ class AI_SELECT(rx.State):
                                 yield rx.window_alert(f"Error después de {max_intentos} intentos Error: {e}, se recomienda Verificar el API")
                                 break # Detenemos el programa si el error persiste después de tres intentos
                             else:
-                                time.sleep(2)
+                                time.sleep(5)
                     if intento == max_intentos:
                         break
                 if intento == max_intentos:
