@@ -1,7 +1,7 @@
 import reflex as rx
 from pdf_translate_web_reflex.componentes import *
-from pdf_translate_web_reflex.state import Translate
 from pdf_translate_web_reflex.styles import *
+from .editor_texto import AI_SELECT
 
 @rx.page('/translate')
 def traductor_pdf() -> rx.Component:
@@ -34,7 +34,7 @@ def traductor_pdf() -> rx.Component:
         ),
         rx.button(
             "Subir Archivo", 
-            on_click= Translate.extract_text_from_pdf(rx.upload_files(upload_id="upload_pdf")),
+            on_click= AI_SELECT.extract_text_from_pdf(rx.upload_files(upload_id="upload_pdf")),
             color=Color.PRIMARY.value, 
             bg="white", 
             border=f"1px solid {Color.SECONDARY.value}",

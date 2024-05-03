@@ -3,18 +3,50 @@ import re
 import requests
 import nltk
 import time
+import fitz
+
+from io import BytesIO
+from bs4 import BeautifulSoup
 from pdf_translate_web_reflex.componentes import Editor_Texto
 from pdf_translate_web_reflex.componentes import navbar
-from pdf_translate_web_reflex.state import Translate
 from ..componentes.react_pdf import react_pdf 
 from ..styles import *
 
-url = { "Hugginface" : 'https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-en-es'}
+url_data = ["Hugginface" ]
 
 class AI_SELECT(rx.State):
+    text: str = ""
     api_key: str = ""
-    url: dict = url['Hugginface']
+    url: str = url_data[0]
+    processing: bool = False
     content: str = ""
+
+    async def extract_text_from_pdf(self, file: list[rx.UploadFile]):
+        for f in file:
+            try:
+                if f.filename.endswith('.pdf'):
+                    pdf_reader = fitz.open(stream=BytesIO(await f.read()))
+                    for page_num in range(pdf_reader.page_count):
+                        self.text += pdf_reader.load_page(page_num).get_text()
+                        AI_SELECT.text = self.text
+                elif f.filename.endswith('.html') or f.filename.endswith('.htm'):
+                    html_data = await f.read()
+                    soup = BeautifulSoup(html_data.decode('utf-8'), 'html.parser')
+                    self.text = soup.get_text()
+                    AI_SELECT.text = self.text
+                elif f.filename.endswith('.txt'):
+                    text_data = await f.read()
+                    self.text = text_data.decode('utf-8')
+                    AI_SELECT.text = self.text
+            except Exception as e:
+                self.error_message = str(e)
+        return rx.redirect("/editor")
+    
+    def message_error(self):
+        return self.error_message    
+    
+    def set_text(self, new_text: str):
+        self.text += "\n" + new_text
 
     # Función para dividir el corpus en trozos de oraciones con un máximo de 400 tokens por trozo
     async def dividir_corpus_en_oraciones_maximo_tokens(self, corpus, max_tokens):
@@ -25,8 +57,6 @@ class AI_SELECT(rx.State):
         for oracion in oraciones:
             tokens_oracion = nltk.word_tokenize(oracion)
             if tokens_acumulados + len(tokens_oracion) <= max_tokens:
-                oracion = re.sub(r'[^a-zA-Z0-9\s]', '', oracion) 
-                oracion = oracion.replace("\n", " ").replace("\r", "") . replace("\t", "").replace("\\", "")
                 trozo_actual.append(oracion)
                 tokens_acumulados += len(tokens_oracion)
             else:
@@ -38,20 +68,15 @@ class AI_SELECT(rx.State):
             divisiones.append(trozo_actual)
         return divisiones
     
-    async def query(self, api_url, headers, payload):
-        payload = {
-                    "inputs": payload,
-                }
-        headers = {
-            "Authorization": f"Bearer {api_url['Hugginface']}" 
-        }
-        return await requests.post(api_url, headers=headers, json=payload).json()
+    def query(self, headers, payload):
+        output = requests.post(url=self.url, headers=headers, json=payload)
+        return output.json()
     
     @rx.background
-    async def get_texto(self, url_hug: dict = {}, api_hub = ""):
-        if api_hub == "":
+    async def get_texto(self):
+        if self.api_key == "":
             yield rx.window_alert("Debe ingresar una API")
-        if url_hug == {}:
+        elif self.url == {}:
             yield rx.window_alert("Debe Seleccionar una URL")
         else:
             text = await self.dividir_corpus_en_oraciones_maximo_tokens(self.content, 400)
@@ -61,32 +86,44 @@ class AI_SELECT(rx.State):
                     intento = 0
                     while intento < max_intentos:
                         try:
-                            output = self.query(url_hug, api_hub, oracion)
-                            self.content += output[0]['translation_text']
-                            yield rx.window_alert("Traducido :)")
+                            async with self:
+                                self.processing = True
+                                if self.url == url_data[0]:
+                                    self.url = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-en-es"
+                            headers = {"Authorization": f"Bearer {self.api_key}",}
+                            payload= { "inputs" : oracion, }
+                            output = self.query(headers, payload)
+                            async with self:
+                                self.content += output[0]['translation_text']
                             break  # Salimos del bucle while si no se produce ningún error
                         except Exception as e:
                             intento += 1
                             if intento == max_intentos:
-                                self.error_message = str(e)
-                                yield rx.window_alert(f"Error después de {max_intentos} intentos Error: {e}")
-                                exit()  # Detenemos el programa si el error persiste después de tres intentos
+                                async with self:
+                                    self.processing = False
+                                    self.error_message = str(e)
+                                yield rx.window_alert(f"Error después de {max_intentos} intentos Error: {e}, se recomienda Verificar el API")
+                                break # Detenemos el programa si el error persiste después de tres intentos
                             else:
-                                time.sleep(1)
-                                
-    def handler_change(self):
-        self.get_texto(self.url, self.api_key)
-    
+                                time.sleep(2)
+                    if intento == max_intentos:
+                        break
+                if intento == max_intentos:
+                    break
+            async with self:
+                self.processing = False
+                self.text += "\n" + "\n" + "\n" + "\n" + self.content
+
     def text_editor(self, content: str):
         self.content = content
 
 def options() -> rx.Component:
     return rx.select(
-        url,
+        url_data,
         size="3",
         variant="classic",
         radius="large",
-        default_value=url['Hugginface'],
+        default_value=url_data[0],
         on_change=AI_SELECT.set_url,
     )
 
@@ -94,10 +131,27 @@ def options() -> rx.Component:
 def editor() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),
+        rx.chakra.vstack(
+            rx.hstack(
+                rx.el.h2("API"),
+            ),
+            rx.hstack(
+                options(),
+                rx.input(
+                    placeholder='API Key',
+                    max_length=38,
+                    type="text",
+                    size="3",
+                    value=AI_SELECT.api_key,
+                    class_name="lg:w-[300px]",
+                    on_change=AI_SELECT.set_api_key,
+                ),
+            )
+        ),
         rx.flex(
-            Editor_Texto(Translate.text, AI_SELECT.text_editor, rx.EditorButtonList.COMPLEX.value),
+            Editor_Texto(AI_SELECT.text, AI_SELECT.text_editor, rx.EditorButtonList.COMPLEX.value),
             react_pdf(
-                stream=Translate.text,
+                stream=AI_SELECT.text,
                 aling='center',
             ),
             direction='row',
@@ -107,24 +161,28 @@ def editor() -> rx.Component:
             padding="1rem",
             width = '100% !important',
         ),
-        rx.hstack(
-            rx.el.h2("Selecciona",),
-            options(),
-            rx.el.h2("API_Hugginface",),
-            rx.text_area(
-                'API Key',
-                value=AI_SELECT.api_key,
-                on_change=AI_SELECT.set_api_key,
+        rx.cond(
+            AI_SELECT.processing,
+            rx.chakra.vstack(
+                rx.text('Procesando...'),
+                rx.chakra.spinner(
+                    label="Cargando...",
+                    color=Color.PRIMARY.value,
+                    size="xl",
+                ),
+                rx.text('Por favor espere.., esto puede tardar un poco dependiendo del tamaño del texto'),
+                margin = "1rem",
+                padding = "1rem",
             ),
-        ),
-        rx.button(
+            rx.button(
                 'Traducir todo el texto', 
-                on_click=AI_SELECT.handler_change,
+                on_click=AI_SELECT.get_texto,
                 color=Color.PRIMARY.value, 
                 bg="white", 
                 border=f"1px solid {Color.SECONDARY.value}",
                 cursor = 'pointer',
                 margin_top = "1rem",
+            ),
         ),
         height = '100vh',
     )

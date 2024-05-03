@@ -42,7 +42,7 @@ def navbar() ->rx.Component:
                     high_contrast=True,
                 ),
                 rx.button(
-                    "Traductor PDF",
+                    "Traductor",
                     on_click=rx.redirect("/translate"),
                     color=Color.PRIMARY.value, 
                     bg="white", 
