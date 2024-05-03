@@ -3,7 +3,7 @@ import reflex as rx
 
 MAX_WIDTH = "550PX"
 
-MARGIN_TOP_BODY = "10rem"
+MARGIN_TOP_BODY = "10rem ! important"
 
 THEME = rx.theme(
         appearance="light", 

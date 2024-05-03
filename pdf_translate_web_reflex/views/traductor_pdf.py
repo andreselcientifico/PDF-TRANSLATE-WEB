@@ -3,7 +3,7 @@ from pdf_translate_web_reflex.componentes import *
 from pdf_translate_web_reflex.styles import *
 from .editor_texto import AI_SELECT
 
-@rx.page('/translate')
+@rx.page('/traductor_texto')
 def traductor_pdf() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),

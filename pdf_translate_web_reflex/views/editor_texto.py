@@ -7,9 +7,7 @@ import fitz
 
 from io import BytesIO
 from bs4 import BeautifulSoup
-from pdf_translate_web_reflex.componentes import Editor_Texto
-from pdf_translate_web_reflex.componentes import navbar
-from ..componentes.react_pdf import react_pdf 
+from ..componentes import *
 from ..styles import *
 
 nltk.download('punkt')
