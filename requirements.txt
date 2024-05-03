@@ -1,1 +1,13 @@
-reflex==0.4.9
+bcrypt==4.1.2
+beautifulsoup4==4.12.3
+nltk==3.8.1
+passlib==1.7.4
+pgvector==0.2.5
+psycopg==3.1.18
+psycopg-binary==3.1.18
+PyMuPDF==1.24.2
+PyPDF2==3.0.1
+python-dotenv==1.0.1
+python-jose==3.3.0
+reflex-audio-capture==0.0.2
+reflex-google-auth==0.0.5

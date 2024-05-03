@@ -1,4 +1,5 @@
 import reflex as rx
+    
 
 def Editor_Texto(contenido: str, funciones,opciones) -> rx.Component:
     return rx.flex(
