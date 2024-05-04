@@ -7,19 +7,19 @@ def traductor_voz() -> rx.Component:
         navbar(),
         rx.chakra.vstack(
             rx.heading(
-                "EN CONSTRUCCION",
+                "EN CONSTRUCCIÓN",
                 size='9'
             ),
             rx.text(
                 "Traductor de voz"
             ),
             rx.text(
-                "Pronto se agregara esta funcion, es cuestion de tiempo que se vea en la pagina."
-            )
-            ,rx.text(
-                "Se agradece el interez"
+                "Pronto se agregará esta función. Es cuestión de tiempo que se vea en la página."
             ),
-            margin_top = MARGIN_TOP_BODY,
+            rx.text(
+                "Se agradece el interés."
+            ),
+            margin_top=MARGIN_TOP_BODY,
         ),
         footer(),
     )
