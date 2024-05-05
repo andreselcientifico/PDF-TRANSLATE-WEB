@@ -20,6 +20,7 @@ class AI_SELECT(rx.State):
     url: str = url_data[0]
     processing: bool = False
     content: str = ""
+    content_data: str = ""
 
     async def extract_text_from_pdf(self, file: list[rx.UploadFile]):
         for f in file:
@@ -79,6 +80,9 @@ class AI_SELECT(rx.State):
         elif self.url == {}:
             yield rx.window_alert("Debe Seleccionar una URL")
         else:
+            async with self:
+                self.content_data  += self.content
+                self.text = ""
             text = await self.dividir_corpus_en_oraciones_maximo_tokens(self.content, 400)
             max_intentos = 3  # Número máximo de intentos
             for trozo in text:
@@ -94,7 +98,7 @@ class AI_SELECT(rx.State):
                             payload= { "inputs" : oracion, }
                             output = self.query(headers, payload)
                             async with self:
-                                self.content += output[0]['translation_text']
+                                self.text += output[0]['translation_text']
                             break  # Salimos del bucle while si no se produce ningún error
                         except Exception as e:
                             intento += 1
@@ -105,14 +109,20 @@ class AI_SELECT(rx.State):
                                 yield rx.window_alert(f"Error después de {max_intentos} intentos Error: {e}, se recomienda Verificar el API")
                                 break # Detenemos el programa si el error persiste después de tres intentos
                             else:
-                                time.sleep(5)
+                                time.sleep(2)
                     if intento == max_intentos:
                         break
                 if intento == max_intentos:
                     break
             async with self:
+                print(self.content_data)
+                self.text +=  f"""
+                                
+                    Texto anterior:
+                    {self.content_data}
+                    """  
+                self.content_data = ""
                 self.processing = False
-                self.text += "\n" + "\n" + "\n" + "\n" + self.content
 
     def text_editor(self, content: str):
         self.content = content
@@ -150,10 +160,10 @@ def editor() -> rx.Component:
         ),
         rx.flex(
             Editor_Texto(AI_SELECT.text, AI_SELECT.text_editor, rx.EditorButtonList.COMPLEX.value),
-            react_pdf(
-                stream=AI_SELECT.text,
-                aling='center',
-            ),
+            #react_pdf(
+            #     stream=AI_SELECT.text,
+            #     aling='center',
+            # ),
             direction='row',
             style={
                 'justifyContent': 'space-evenly !important'
