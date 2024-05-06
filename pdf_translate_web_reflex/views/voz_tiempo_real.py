@@ -6,20 +6,22 @@ def traductor_voz() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),
         rx.chakra.vstack(
-            rx.heading(
-                "EN CONSTRUCCIÓN",
-                size='9'
-            ),
             rx.text(
                 "Traductor de voz"
             ),
             rx.text(
-                "Pronto se agregará esta función. Es cuestión de tiempo que se vea en la página."
+                "Esta Funcion se pretende agregar Sin el reglamento de Meta, se encuentra en construccion"
             ),
             rx.text(
-                "Se agradece el interés."
-            ),
-            margin_top=MARGIN_TOP_BODY,
+                "Puedes usar cualquier sala :)"
+            )
+        ),
+        rx.chakra.box(
+            element="iframe",
+            src="https://facebook-seamless-streaming.hf.space",
+            width="650px",
+            height="550px",
+            frameborder="0",
         ),
         footer(),
     )
