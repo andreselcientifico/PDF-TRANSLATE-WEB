@@ -23,5 +23,4 @@ def traductor_voz() -> rx.Component:
             height="550px",
             frameborder="0",
         ),
-        footer(),
     )

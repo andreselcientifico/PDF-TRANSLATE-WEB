@@ -1,6 +1,6 @@
 from reflex.components.component import NoSSRComponent
 from reflex.vars import Var
-from typing import Union, List,Dict, Annotated
+from typing import Union, List,Dict, Optional
 class react_pdf_lib(NoSSRComponent):
     """componente pdf react"""
 
@@ -16,7 +16,7 @@ class react_pdf_lib(NoSSRComponent):
 
 class react_pdf(react_pdf_lib):
     """componente pdf react"""
-    children: Annotated[Union[str, List[str]], Var] = None
+    children: Optional[Union[Var[str], str]] = None
     style: Var[Dict[str, List[str]]] = None
     class_Name: str = None
     width: Var[Union[str, float]] = None
