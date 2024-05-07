@@ -4,7 +4,7 @@ from pdf_translate_web_reflex.styles import *
 def body() -> rx.Component:
     return rx.vstack(
     rx.tablet_and_desktop(
-        rx.logo(backgound ="withe"),
+        rx.logo(),
         rx.hstack(
             rx.box(
                 rx.heading(
@@ -14,15 +14,19 @@ def body() -> rx.Component:
                     size='9'
                 ),
                 align_items="center",
-                background_color="var(--accent-2)",
+                background_color="var(--accent-4)",
                 border_radius="0.5rem",
             ),
             rx.heading(
                 'MIND', 
                 color_scheme='indigo',
-                high_contrast=True,
-                size='9'
+                size='9',
+                style={
+                    "text_shadow": "1px 1px 2px rgba(255, 255, 255, 0.5)",
+                }
             ),
+            font_family=Font.LOGO.value,
+            border_radius="1rem",
             justify="center",
             gap="initial",
         ),
@@ -62,17 +66,18 @@ def body() -> rx.Component:
                     size='9'
                 ),
                 align_items="center",
-                background_color="var(--accent-2)",
+                background_color="var(--accent-4)",
                 border_radius="0.5rem",
             ),
-            rx.text(
+            rx.heading(
                 'MIND', 
                 color_scheme='indigo',
                 size='9',
                 style={
-                    "text_shadow": "4px 4px 4px rgba(255, 255, 255, 0.5)",
+                    "text_shadow": "1px 1px 2px rgba(255, 255, 255, 0.5)",
                 }
             ),
+            font_family=Font.LOGO.value,
             gap="initial",
         ),
         rx.text(

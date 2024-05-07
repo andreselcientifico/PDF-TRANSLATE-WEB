@@ -22,10 +22,10 @@ class Color(Enum):
         PURPLE = "#4E258A"
 
 THEME = rx.theme(
-        appearance="inherit",
+        appearance="dark",
         has_background=True,
         radius="large", 
-        accent_color="teal", 
+        accent_color="sky", 
         scaling='100%',
     )
 
@@ -58,9 +58,5 @@ BASE_STYLES = {
     "font_family" : Font.DEFAULT.value,
     "background_color" : Color.BACKGROUND.value, 
     "color" : TextColor.BODY.value,
-    "height" : "100vh",
-    rx.chakra.button : {
-        "color": "withe",
-        "background_color": "blue",
-    }
+    "height" : "100vh"
 }

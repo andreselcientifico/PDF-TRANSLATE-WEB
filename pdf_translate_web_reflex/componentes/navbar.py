@@ -24,8 +24,7 @@ def menu() ->rx.Component:
         rx.hover_card.trigger(
             rx.button(
                 "Menu",
-                background_color="var(--accent-2)",
-                color= "indigo",
+                size="2",
             ),
         ),
         rx.hover_card.content(
@@ -98,16 +97,19 @@ def navbar() ->rx.Component:
                             font_size='1rem', 
                             high_contrast=True,
                         ),
-                        background_color="var(--accent-2)",
+                        background_color="var(--accent-4)",
                         border_radius="0.2rem",
                     ),
                     rx.heading(
                         'MIND', 
                         color_scheme='indigo',
-                        font_size='1rem', 
-                        high_contrast=True,
+                        font_size = "1rem",
+                        style={
+                            "text_shadow": "1px 1px 2px rgba(255, 255, 255, 0.5)",
+                        }
                     ),
                     on_click=rx.redirect("/"),
+                    font_family=Font.LOGO.value,
                     gap="initial",
                     cursor="pointer",
                 ),
@@ -115,6 +117,7 @@ def navbar() ->rx.Component:
         ),
         rx.spacer(),
         menu(),
+        # rx.color_mode.button(rx.color_mode.icon()),
         # rx.input(placeholder="Buscar aquí...", max_length="30"),
         # menu_state(),
         position="sticky",

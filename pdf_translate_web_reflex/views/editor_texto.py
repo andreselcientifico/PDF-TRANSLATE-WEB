@@ -2,6 +2,7 @@ import reflex as rx
 import re
 import requests
 import nltk
+from nltk.tokenize import sent_tokenize, word_tokenize
 import time
 import fitz
 
@@ -51,24 +52,25 @@ class AI_SELECT(rx.State):
 
     # Función para dividir el corpus en trozos de oraciones con un máximo de 400 tokens por trozo
     async def dividir_corpus_en_oraciones_maximo_tokens(self, corpus, max_tokens):
-        oraciones = nltk.sent_tokenize(corpus)  # Tokenizar el corpus en oraciones
-        divisiones = []
-        trozo_actual = []
-        tokens_acumulados = 0
-        for oracion in oraciones:
-            tokens_oracion = nltk.word_tokenize(oracion)
-            if tokens_acumulados + len(tokens_oracion) <= max_tokens:
-                trozo_actual.append(oracion)
-                tokens_acumulados += len(tokens_oracion)
-            else:
-                divisiones.append(trozo_actual)
-                trozo_actual = [oracion]
-                tokens_acumulados = len(tokens_oracion)
-        # Añadir el último trozo si no se ha añadido ya
-        if trozo_actual:
-            divisiones.append(trozo_actual)
-        return divisiones
-    
+        # Dividir el texto en párrafos de aproximadamente 'limite_tokens' de longitud
+        corpus = BeautifulSoup(corpus, "html.parser").get_text()
+        parrafos = []
+        tokens_actuales = 0
+        parrafo_actual = ""
+        for palabra in re.findall(r'\b\w+\b', corpus):
+            # Agregar la palabra al párrafo actual
+            parrafo_actual += palabra + " "
+            tokens_actuales += 1
+            # Si se alcanza el límite de tokens, agregar el párrafo actual a la lista de párrafos y reiniciar
+            if tokens_actuales >= max_tokens:
+                parrafos.append(parrafo_actual.strip())
+                parrafo_actual = ""
+                tokens_actuales = 0
+        # Agregar el último párrafo si es necesario
+        if parrafo_actual:
+            parrafos.append(parrafo_actual.strip())
+        return parrafos
+        
     def query(self, headers, payload):
         output = requests.post(url=self.url, headers=headers, json=payload)
         return output.json()
@@ -83,41 +85,38 @@ class AI_SELECT(rx.State):
             async with self:
                 self.content_data  += self.content
                 self.text = ""
-            text = await self.dividir_corpus_en_oraciones_maximo_tokens(self.content, 400)
+            text = await self.dividir_corpus_en_oraciones_maximo_tokens(self.content, 100)
             max_intentos = 3  # Número máximo de intentos
-            for trozo in text:
-                for oracion in trozo:
-                    intento = 0
-                    while intento < max_intentos:
-                        try:
+            for parrafo in text:
+                intento = 0
+                while intento < max_intentos:
+                    try:
+                        async with self:
+                            self.processing = True
+                            if self.url == url_data[0]:
+                                self.url = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-en-es"
+                        headers = {"Authorization": f"Bearer {self.api_key}",}
+                        payload= { "inputs" : parrafo, }
+                        output = self.query(headers, payload)
+                        async with self:
+                            self.text += " " + output[0]['translation_text']
+                        break  # Salimos del bucle while si no se produce ningún error
+                    except Exception as e:
+                        intento += 1
+                        if intento == max_intentos:
                             async with self:
-                                self.processing = True
-                                if self.url == url_data[0]:
-                                    self.url = "https://api-inference.huggingface.co/models/Helsinki-NLP/opus-mt-en-es"
-                            headers = {"Authorization": f"Bearer {self.api_key}",}
-                            payload= { "inputs" : oracion, }
-                            output = self.query(headers, payload)
-                            async with self:
-                                self.text += output[0]['translation_text']
-                            break  # Salimos del bucle while si no se produce ningún error
-                        except Exception as e:
-                            intento += 1
-                            if intento == max_intentos:
-                                async with self:
-                                    self.processing = False
-                                    self.error_message = str(e)
-                                yield rx.window_alert(f"Error después de {max_intentos} intentos Error: {e}, se recomienda Verificar el API")
-                                break # Detenemos el programa si el error persiste después de tres intentos
-                            else:
-                                time.sleep(2)
-                    if intento == max_intentos:
-                        break
+                                self.processing = False
+                                self.error_message = str(e)
+                            yield rx.window_alert(f"Error después de {max_intentos} intentos ('Error'): {e}, se recomienda Verificar el API")
+                            break # Detenemos el programa si el error persiste después de tres intentos
+                        else:
+                            time.sleep(2)
                 if intento == max_intentos:
-                    break
+                        break
             async with self:
-                print(self.content_data)
                 self.text +=  f"""
                                 
+                
                     Texto anterior:
                     {self.content_data}
                     """  
@@ -140,59 +139,160 @@ def options() -> rx.Component:
 @rx.page("/editor")
 def editor() -> rx.Component:
     return rx.chakra.vstack(
-        navbar(),
-        rx.chakra.vstack(
-            rx.hstack(
-                rx.el.h2("API"),
-            ),
-            rx.hstack(
-                options(),
-                rx.input(
-                    placeholder='API Key',
-                    max_length=38,
-                    type="text",
-                    size="3",
-                    value=AI_SELECT.api_key,
-                    class_name="lg:w-[300px]",
-                    on_change=AI_SELECT.set_api_key,
-                ),
-            )
-        ),
-        rx.flex(
-            Editor_Texto(AI_SELECT.text, AI_SELECT.text_editor, rx.EditorButtonList.COMPLEX.value),
-            #react_pdf(
-            #     stream=AI_SELECT.text,
-            #     aling='center',
-            # ),
-            direction='row',
-            style={
-                'justifyContent': 'space-evenly !important'
-            },
-            padding="1rem",
-            width = '100% !important',
-        ),
-        rx.cond(
-            AI_SELECT.processing,
+        rx.desktop_only(
             rx.chakra.vstack(
-                rx.text('Procesando...'),
-                rx.chakra.spinner(
-                    label="Cargando...",
-                    color=Color.PRIMARY.value,
-                    size="xl",
+                navbar(),
+                rx.chakra.vstack(
+                    rx.hstack(
+                        rx.el.h2("API"),
+                    ),
+                    rx.hstack(
+                        options(),
+                        rx.input(
+                            placeholder='API Key',
+                            max_length=38,
+                            type="text",
+                            size="3",
+                            value=AI_SELECT.api_key,
+                            class_name="lg:w-[300px]",
+                            on_change=AI_SELECT.set_api_key,
+                        ),
+                        align="center"
+                    ),
                 ),
-                rx.text('Por favor espere.., esto puede tardar un poco dependiendo del tamaño del texto'),
-                margin = "1rem",
-                padding = "1rem",
+                Editor_Texto(
+                    AI_SELECT.text, AI_SELECT.text_editor, 
+                    rx.EditorButtonList.COMPLEX.value,
+                    width = '1080px !important',
+                    height = "65vh"
+                ),
+                rx.cond(
+                    AI_SELECT.processing,
+                    rx.chakra.vstack(
+                        rx.text('Procesando...'),
+                        rx.chakra.spinner(
+                            label="Cargando...",
+                            color=Color.PRIMARY.value,
+                            size="xl",
+                        ),
+                        rx.text('Por favor espere.., esto puede tardar un poco dependiendo del tamaño del texto'),
+                        margin = "1rem",
+                        padding = "1rem",
+                    ),
+                    rx.button(
+                            'Traducir todo el texto', 
+                            on_click=AI_SELECT.get_texto,
+                            color=Color.PRIMARY.value, 
+                            bg="white", 
+                            border=f"1px solid {Color.SECONDARY.value}",
+                            cursor = 'pointer',
+                    ),
+                ),
             ),
-            rx.button(
-                'Traducir todo el texto', 
-                on_click=AI_SELECT.get_texto,
-                color=Color.PRIMARY.value, 
-                bg="white", 
-                border=f"1px solid {Color.SECONDARY.value}",
-                cursor = 'pointer',
-                margin_top = "1rem",
-            ),
+            width = "100%"
         ),
-        height = '100vh',
+        rx.tablet_only(
+            rx.chakra.vstack(
+                navbar(),
+                rx.chakra.vstack(
+                    rx.hstack(
+                        rx.el.h2("API"),
+                    ),
+                    rx.hstack(
+                        options(),
+                        rx.input(
+                            placeholder='API Key',
+                            max_length=38,
+                            type="text",
+                            size="3",
+                            value=AI_SELECT.api_key,
+                            class_name="lg:w-[300px]",
+                            on_change=AI_SELECT.set_api_key,
+                        ),
+                        align="center"
+                    ),
+                ),
+                Editor_Texto(
+                    AI_SELECT.text, AI_SELECT.text_editor, 
+                    rx.EditorButtonList.COMPLEX.value,
+                    width = '680px !important',
+                    height = "60vh"
+                ),
+                rx.cond(
+                    AI_SELECT.processing,
+                    rx.chakra.vstack(
+                        rx.text('Procesando...'),
+                        rx.chakra.spinner(
+                            label="Cargando...",
+                            color=Color.PRIMARY.value,
+                            size="xl",
+                        ),
+                        rx.text('Por favor espere.., esto puede tardar un poco dependiendo del tamaño del texto'),
+                        margin = "1rem",
+                        padding = "1rem",
+                    ),
+                    rx.button(
+                            'Traducir todo el texto', 
+                            on_click=AI_SELECT.get_texto,
+                            color=Color.PRIMARY.value, 
+                            bg="white", 
+                            border=f"1px solid {Color.SECONDARY.value}",
+                            cursor = 'pointer',
+                    ),
+                ),
+            ),
+            width = "100%"
+        ),
+        rx.mobile_only(
+            rx.chakra.vstack(
+                navbar(),
+                rx.chakra.vstack(
+                    rx.hstack(
+                        rx.el.h2("API"),
+                    ),
+                    rx.hstack(
+                        options(),
+                        rx.input(
+                            placeholder='API Key',
+                            max_length=38,
+                            type="text",
+                            size="3",
+                            value=AI_SELECT.api_key,
+                            class_name="lg:w-[300px]",
+                            on_change=AI_SELECT.set_api_key,
+                        ),
+                        align="center"
+                    ),
+                ),
+                Editor_Texto(
+                    AI_SELECT.text, AI_SELECT.text_editor, 
+                    rx.EditorButtonList.COMPLEX.value,
+                    width = '380px !important',
+                    height = "45vh"
+                ),
+                rx.cond(
+                    AI_SELECT.processing,
+                    rx.chakra.vstack(
+                        rx.text('Procesando...'),
+                        rx.chakra.spinner(
+                            label="Cargando...",
+                            color=Color.PRIMARY.value,
+                            size="xl",
+                        ),
+                        rx.text('Por favor espere.., esto puede tardar un poco dependiendo del tamaño del texto'),
+                        margin = "1rem",
+                        padding = "1rem",
+                    ),
+                    rx.button(
+                            'Traducir todo el texto', 
+                            on_click=AI_SELECT.get_texto,
+                            color=Color.PRIMARY.value, 
+                            bg="white", 
+                            border=f"1px solid {Color.SECONDARY.value}",
+                            cursor = 'pointer',
+                    ),
+                ),
+            ),
+            width = "100%"
+        ),
     )
