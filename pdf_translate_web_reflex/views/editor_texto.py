@@ -29,7 +29,7 @@ class AI_SELECT(rx.State):
                 if f.filename.endswith('.pdf'):
                     pdf_reader = fitz.open(stream=BytesIO(await f.read()))
                     for page_num in range(pdf_reader.page_count):
-                        self.text += pdf_reader.load_page(page_num).get_text()
+                        self.text += pdf_reader.load_page(page_num).get_text("html")
                         AI_SELECT.text = self.text
                 elif f.filename.endswith('.html') or f.filename.endswith('.htm'):
                     html_data = await f.read()
@@ -164,7 +164,7 @@ def editor() -> rx.Component:
                     AI_SELECT.text, AI_SELECT.text_editor, 
                     rx.EditorButtonList.COMPLEX.value,
                     width = '1080px !important',
-                    height = "65vh"
+                    height = "57vh"
                 ),
                 rx.cond(
                     AI_SELECT.processing,
