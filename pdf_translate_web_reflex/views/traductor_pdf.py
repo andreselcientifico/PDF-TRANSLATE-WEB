@@ -8,13 +8,10 @@ def traductor_pdf() -> rx.Component:
     return rx.chakra.vstack(
         navbar(),
         rx.chakra.vstack(
-            rx.heading(
-                "¡Bienvenido!",
-                size="9",
-            ),
             rx.text(
                 "¿Necesitas traducir un archivo PDF, HTML o TXT? ¡Estás en el lugar correcto!",
                 font_size="lg",
+                align="center",
                 color="gray.700",
                 margin_bottom="1rem",
             ),
@@ -28,7 +25,8 @@ def traductor_pdf() -> rx.Component:
                         cursor = 'pointer',
                     ),
                     rx.text(
-                        "Arrastre y suelte archivos aquí o haga clic para seleccionar archivos"
+                        "Arrastre y suelte archivos aquí o haga clic para seleccionar archivos",
+                        align="center",
                     ),
                 ),
                 accept = {
@@ -38,7 +36,7 @@ def traductor_pdf() -> rx.Component:
                 },
                 max_files=1,
                 id="upload_pdf",
-                border=f"1px dotted {Color.SECONDARY.value}",
+                border=f"2px dotted {Color.SECONDARY.value}",
                 padding="3em",
                 cursor = 'pointer',
             ),
@@ -49,12 +47,7 @@ def traductor_pdf() -> rx.Component:
                 bg="white", 
                 border=f"1px solid {Color.SECONDARY.value}",
                 cursor = 'pointer',
-                margin_top = "1rem",
-            ),
-            rx.text(
-                "Recuerda: El texto traducido estará en formato plano y perderá el formato original del PDF, pero podrás editarlo fácilmente en el editor.",
-                margin_top="1rem",
-                Color="gray.700",
+                margin_top = "3rem ! important",
             ),
             margin_top = MARGIN_TOP_BODY,
         )

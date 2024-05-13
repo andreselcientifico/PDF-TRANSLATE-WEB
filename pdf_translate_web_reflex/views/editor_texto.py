@@ -62,31 +62,24 @@ class AI_SELECT(rx.State):
     
 
     async def extract_text_from_pdf(self, file: list[rx.UploadFile]):
+        self.text = ""
+        self.content = ""
+        self.content_data = ""
         for f in file:
             try:
                 if f.filename.endswith('.pdf'):
                     pdf_reader = fitz.open(stream=BytesIO(await f.read()))
                     for page_num in range(pdf_reader.page_count):
                         self.text += pdf_reader.load_page(page_num).get_text("html")
-                        AI_SELECT.text = self.text
                 elif f.filename.endswith('.html') or f.filename.endswith('.htm'):
                     html_data = await f.read()
-                    soup = BeautifulSoup(html_data.decode('utf-8'), 'html.parser')
-                    self.text = soup.get_text()
-                    AI_SELECT.text = self.text
+                    self.text = html_data.decode('utf-8')
                 elif f.filename.endswith('.txt'):
                     text_data = await f.read()
                     self.text = text_data.decode('utf-8')
-                    AI_SELECT.text = self.text
             except Exception as e:
                 self.error_message = str(e)
         return rx.redirect("/editor")
-    
-    def message_error(self):
-        return self.error_message    
-    
-    def set_text(self, new_text: str):
-        self.text += "\n" + new_text
 
     # Función para dividir el corpus en trozos de oraciones con un máximo de 400 tokens por trozo
     async def dividir_corpus_en_oraciones_maximo_tokens(self, corpus, max_tokens):
@@ -106,6 +99,7 @@ class AI_SELECT(rx.State):
             # Si el token es una etiqueta HTML, lo agregamos directamente al párrafo actual
             if token.startswith('<') and token.endswith('>'):
                 parrafo_actual += token + " "
+                tokens_actuales += 1
             else:
                 # Si el token es texto, lo agregamos al párrafo actual y contamos los tokens
                 parrafo_actual += token + " "
@@ -138,11 +132,11 @@ class AI_SELECT(rx.State):
                         async with self:
                             self.processing = True
                         if self.idioma == url_data[0]:
-                            output = GoogleTranslator(target='es').translate(parrafo)
+                            async with self:
+                                self.text += " " + GoogleTranslator(target='es').translate(parrafo)
                         else:
-                            output = GoogleTranslator().translate(parrafo)
-                        async with self:
-                            self.text += " " + output
+                            async with self:
+                                self.text += " " + GoogleTranslator().translate(parrafo)
                         break  # Salimos del bucle while si no se produce ningún error
                     except Exception as e:
                         intento += 1
@@ -182,10 +176,8 @@ class AI_SELECT(rx.State):
                         prompt_parts = [
                                         prompt
                                     ]
-                        output = model.generate_content(prompt_parts)
-                        print(output.text)
                         async with self:
-                            self.text += " " + output.text
+                            self.text += " " + model.generate_content(prompt_parts).text
                         break  # Salimos del bucle while si no se produce ningún error
                     except Exception as e:
                         intento += 1
@@ -196,6 +188,7 @@ class AI_SELECT(rx.State):
                             yield rx.window_alert(f"Error después de {max_intentos} intentos ('Error'): {e}")
                             break # Detenemos el programa si el error persiste después de tres intentos
                         else:
+                            print(e)
                             time.sleep(2)
                 if intento == max_intentos:
                     break
