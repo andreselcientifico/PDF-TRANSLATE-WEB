@@ -291,7 +291,7 @@ def editor() -> rx.Component:
                         margin = "1rem",
                         padding = "1rem",
                     ),
-                    rx.hstack(
+                    rx.chakra.vstack(
                         rx.hstack(
                             rx.el.h2("Metodo:"),
                         ),
@@ -343,7 +343,7 @@ def editor() -> rx.Component:
                         margin = "1rem",
                         padding = "1rem",
                     ),
-                    rx.hstack(
+                    rx.chakra.vstack(
                         rx.hstack(
                             rx.el.h2("Metodo:"),
                         ),

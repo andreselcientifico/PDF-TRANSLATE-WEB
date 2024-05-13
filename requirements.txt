@@ -14,4 +14,3 @@ PyMuPDF==1.24.2
 python-dotenv==1.0.1
 python-jose==3.3.0
 reflex-audio-capture==0.0.2
-reflex-google-auth==0.0.5
