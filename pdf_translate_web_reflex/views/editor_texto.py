@@ -8,7 +8,6 @@ import os
 
 from io import BytesIO
 from nltk.tokenize import RegexpTokenizer
-from bs4 import BeautifulSoup
 from ..componentes import *
 from ..styles import *
 from nltk.tokenize import sent_tokenize, word_tokenize
